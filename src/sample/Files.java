@@ -15,7 +15,8 @@ class Files {
     static void Synchronize() throws IOException {
         ListFiles();
         RemoveRedundantFiles();
-        AddFiles(Constants.COPIED_CONTENT_PATH);
+        ReplaceWithNewerFile();
+        AddFiles();
     }
 
     private static void ListFiles() {
@@ -26,15 +27,24 @@ class Files {
         Utils.listFiles(Constants.COPIED_CONTENT_PATH, backupDirectoryFiles);
     }
 
-    public static void ReplaceWithNewerFile(){
+    private static void ReplaceWithNewerFile() throws IOException {
         List<File> filesToReplace = originalDirectoryFiles
                 .stream()
-                .filter(file -> backupDirectoryFiles.stream().map(f -> f.getAbsolutePath().replace(Constants.COPIED_CONTENT_PATH, ""))
-                        .anyMatch(f -> f.equals(file.getAbsolutePath().replace(Constants.ORIGINAL_CONTENT_PATH, ""))))
+                .filter(file -> backupDirectoryFiles.stream()
+                        .anyMatch(f -> f.getAbsolutePath().replace(Constants.COPIED_CONTENT_PATH, "")
+                                .equals(file.getAbsolutePath().replace(Constants.ORIGINAL_CONTENT_PATH, "")) &&
+                                f.lastModified() < file.lastModified()))
                 .collect(Collectors.toList());
+
+        for (File file : filesToReplace) {
+            File newFile = new File(Constants.COPIED_CONTENT_PATH + file.getAbsolutePath().replace(Constants.ORIGINAL_CONTENT_PATH, ""));
+            java.nio.file.Files.copy(file.toPath(),
+                    (newFile).toPath(),
+                    StandardCopyOption.REPLACE_EXISTING);
+        }
     }
 
-    private static void AddFiles(String path) throws IOException {
+    private static void AddFiles() throws IOException {
         List<File> filesToAdd = originalDirectoryFiles
                 .stream()
                 .filter(file -> backupDirectoryFiles.stream().map(f -> f.getAbsolutePath().replace(Constants.COPIED_CONTENT_PATH, ""))
@@ -42,7 +52,7 @@ class Files {
                 .collect(Collectors.toList());
 
         for (File file : filesToAdd) {
-            File newFile = new File(path + file.getAbsolutePath().replace(Constants.ORIGINAL_CONTENT_PATH, ""));
+            File newFile = new File(Constants.COPIED_CONTENT_PATH + file.getAbsolutePath().replace(Constants.ORIGINAL_CONTENT_PATH, ""));
             java.nio.file.Files.copy(file.toPath(),
                     (newFile).toPath(),
                     StandardCopyOption.REPLACE_EXISTING);
