@@ -35,7 +35,7 @@ class Utils {
     }
 
     static String GetTimeToLog(){
-        return LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        return LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"));
     }
 
     static String AddLog(String currentText, String logContent){

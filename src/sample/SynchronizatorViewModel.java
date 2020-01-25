@@ -1,5 +1,6 @@
 package sample;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -28,12 +29,14 @@ public class SynchronizatorViewModel {
 
         synchronization = () -> {
             try {
+                Platform.runLater(() -> log_area.setText(Utils.AddLog(log_area.getText(), Utils.GetTimeToLog() + " Rozpoczęto synchronizację")));
+
                 Directories.Synchronize();
                 Files.Synchronize();
 
                 log_area.setText(Utils.AddLog(log_area.getText(), Utils.GetTimeToLog() + " Pomyślna synchronizacja"));
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (Exception ex) {
+                ex.printStackTrace();
                 log_area.setText(Utils.AddLog(log_area.getText(), Utils.GetTimeToLog() + " Wystąpił błąd"));
             }
         };
